@@ -1,6 +1,6 @@
 /*
  *
- *      syringe.c v1.4
+ *      syringe.c v1.5
  *
  *      Author: Spencer McIntyre (Steiner) <smcintyre [at] securestate [dot] com>
  *
@@ -37,9 +37,9 @@
 #define ATTACK_TYPE_SHELL_CODE_INJECTION 2
 #define ATTACK_TYPE_EXECUTE_SHELL_CODE 3
 #ifdef _M_X64
-#define APPLICATION_NAME "Syringe v1.4 x64"
+#define APPLICATION_NAME "Syringe v1.5 x64"
 #else
-#define APPLICATION_NAME "Syringe v1.4 x86"
+#define APPLICATION_NAME "Syringe v1.5 x86"
 #endif
 #define USAGE_STRING	"A General Purpose DLL & Code Injection Utility\n"\
 						"\n"\
@@ -118,12 +118,12 @@ int main(int argc, char* argv[]) {
 		} else {
 			printf("Failed To Inject.\nError: ");
 			switch (dwResult) {
-				case 1: { printf("Invalid Process ID.\n"); break; }
-				case 2: { printf("Could Not Open A Handle To The Process.\n"); break; }
-				case 3: { printf("Could Not Get The Address Of LoadLibraryA.\n"); break; }
-				case 4: { printf("Could Not Allocate Memory In Remote Process.\n"); break; }
-				case 5: { printf("Could Not Write To Remote Process.\n"); break; }
-				case 6: { printf("Could Not Start The Remote Thread.\n"); break; }
+				case 1: { printf("Invalid Process ID\n"); break; }
+				case 2: { printf("Could Not Open A Handle To The Process\n"); break; }
+				case 3: { printf("Could Not Get The Address Of LoadLibraryA\n"); break; }
+				case 4: { printf("Could Not Allocate Memory In Remote Process\n"); break; }
+				case 5: { printf("Could Not Write To Remote Process\n"); break; }
+				case 6: { printf("Could Not Start The Remote Thread\n"); break; }
 			}
 		}
 	} else if (dwAttackType == ATTACK_TYPE_EXECUTE_SHELL_CODE) {

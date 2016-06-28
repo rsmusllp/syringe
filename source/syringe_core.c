@@ -19,14 +19,14 @@ DWORD InjectDLL(PCHAR pDll, DWORD dwProcessID) {
 		return 3;
 	}
 	pRemoteBuffer = VirtualAllocEx(hProc, NULL, strlen(pDll), (MEM_RESERVE | MEM_COMMIT), PAGE_READWRITE);
-	if (pRemoteBuffer) {
+	if (!pRemoteBuffer) {
 		return 4;
 	}
 
 	if (!WriteProcessMemory(hProc, pRemoteBuffer, pDll, strlen(pDll), NULL)) {
 		return 5;
 	}
-	hRemoteThread = CreateRemoteThread(hProc, NULL, NULL, (LPTHREAD_START_ROUTINE)pLoadLibAddr, pRemoteBuffer, NULL, NULL);
+	hRemoteThread = CreateRemoteThread(hProc, NULL, 0, (LPTHREAD_START_ROUTINE)pLoadLibAddr, pRemoteBuffer, 0, NULL);
 	if (!hRemoteThread) {
 		return 6;
 	}
@@ -58,7 +58,7 @@ DWORD InjectShellcode(PBYTE pShellcode, SIZE_T szShellcodeLength, DWORD dwProces
 	}
 
 	// Step 3, start the assembly stub in via a call to CreateRemoteThread()
-	hRemoteThread = CreateRemoteThread(hProc, NULL, NULL, (LPTHREAD_START_ROUTINE)pRemoteBuffer, NULL, NULL, NULL);
+	hRemoteThread = CreateRemoteThread(hProc, NULL, 0, (LPTHREAD_START_ROUTINE)pRemoteBuffer, NULL, 0, NULL);
 	if (!hRemoteThread) {
 		return 6;
 	}
