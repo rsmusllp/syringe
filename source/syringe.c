@@ -1,6 +1,6 @@
 /*
  *
- *      syringe.c v1.5
+ *      syringe.c v1.6
  *
  *      Author: Spencer McIntyre (Steiner) <smcintyre [at] securestate [dot] com>
  *
@@ -26,9 +26,10 @@
  */
 
 #include <Windows.h>
+#include <WinCrypt.h>
+#include <conio.h>
 #include <stdio.h>
 #include <tlhelp32.h>
-#include <WinCrypt.h>
 
 #include "syringe_core.h"
 
@@ -36,11 +37,14 @@
 #define ATTACK_TYPE_DLL_INJECTION 1
 #define ATTACK_TYPE_SHELL_CODE_INJECTION 2
 #define ATTACK_TYPE_EXECUTE_SHELL_CODE 3
+#define ATTACK_TYPE_DLL_LOAD 4
+
 #ifdef _M_X64
-#define APPLICATION_NAME "Syringe v1.5 x64"
+#define APPLICATION_NAME "Syringe v1.6 x64"
 #else
-#define APPLICATION_NAME "Syringe v1.5 x86"
+#define APPLICATION_NAME "Syringe v1.6 x86"
 #endif
+
 #define USAGE_STRING	"A General Purpose DLL & Code Injection Utility\n"\
 						"\n"\
 						"Usage:\n"\
@@ -51,7 +55,10 @@
 						"    syringe.exe -2 [ shellcode ] [ pid ]\n"\
 						"\n"\
 						"  Execute Shellcode:\n"\
-						"    syringe.exe -3 [ shellcode ]\n"
+						"    syringe.exe -3 [ shellcode ]\n"\
+						"\n"\
+						"  Load A Library:\n"\
+						"    syringe.exe -4 [ dll ]\n"
 
 int main(int argc, char* argv[]) {
 	CHAR pDllPath[MAXLINE] = "";
@@ -61,6 +68,7 @@ int main(int argc, char* argv[]) {
 	DWORD dwNumArgs = 4;
 	PBYTE pShellcode = NULL;
 	DWORD dwShellcodeLength = 0;
+	HANDLE hModule = NULL;
 
 	printf("%s\n", APPLICATION_NAME);
 	if (argc < 2) {
@@ -70,10 +78,16 @@ int main(int argc, char* argv[]) {
 
 	if (strncmp(argv[1], "-1", 2) == 0) {
 		dwAttackType = ATTACK_TYPE_DLL_INJECTION;
-	} else if (strncmp(argv[1], "-2", 2) == 0) {
+	}
+	else if (strncmp(argv[1], "-2", 2) == 0) {
 		dwAttackType = ATTACK_TYPE_SHELL_CODE_INJECTION;
-	} else if (strncmp(argv[1], "-3", 2) == 0) {
+	}
+	else if (strncmp(argv[1], "-3", 2) == 0) {
 		dwAttackType = ATTACK_TYPE_EXECUTE_SHELL_CODE;
+		dwNumArgs = 3;
+	}
+	else if (strncmp(argv[1], "-4", 2) == 0) {
+		dwAttackType = ATTACK_TYPE_DLL_LOAD;
 		dwNumArgs = 3;
 	} else {
 		printf(USAGE_STRING);
@@ -109,13 +123,15 @@ int main(int argc, char* argv[]) {
 		if (dwAttackType == ATTACK_TYPE_DLL_INJECTION) {
 			GetFullPathNameA(argv[2], MAXLINE, pDllPath, NULL);
 			dwResult = InjectDLL(pDllPath, dwPid);
-		} else if (dwAttackType == ATTACK_TYPE_SHELL_CODE_INJECTION) {
+		}
+		else if (dwAttackType == ATTACK_TYPE_SHELL_CODE_INJECTION) {
 			dwResult = InjectShellcode(pShellcode, (SIZE_T)dwShellcodeLength, dwPid);
 		}
 
 		if (dwResult == 0) {
 			printf("Successfully Injected.\n");
-		} else {
+		}
+		else {
 			printf("Failed To Inject.\nError: ");
 			switch (dwResult) {
 				case 1: { printf("Invalid Process ID\n"); break; }
@@ -126,12 +142,29 @@ int main(int argc, char* argv[]) {
 				case 6: { printf("Could Not Start The Remote Thread\n"); break; }
 			}
 		}
-	} else if (dwAttackType == ATTACK_TYPE_EXECUTE_SHELL_CODE) {
+	}
+	else if (dwAttackType == ATTACK_TYPE_EXECUTE_SHELL_CODE) {
 		ExecuteShellcode(pShellcode, (SIZE_T)dwShellcodeLength, FALSE);
+	}
+	else if (dwAttackType == ATTACK_TYPE_DLL_LOAD) {
+		hModule = LoadLibrary(argv[2]);
+		if (!hModule) {
+			printf("Failed to load: %s\n", argv[2]);
+		}
+		else {
+			printf("Successfully loaded: %s\n", argv[2]);
+			printf("Press any key to exit...\n");
+			_getch();
+		}
 	}
 
 	if (pShellcode) {
 		HeapFree(GetProcessHeap(), 0, pShellcode);
+		pShellcode = NULL;
+	}
+	if (hModule) {
+		FreeLibrary(hModule);
+		hModule = NULL;
 	}
 	return 0;
 }
