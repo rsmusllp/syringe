@@ -1,4 +1,7 @@
+Debug/*
 Release/*
+source/Debug/*
 source/Release/*
+source/syringe.vcxproj.user
 syringe.opensdf
 syringe.sdf
